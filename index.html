@@ -35,11 +35,13 @@
 
         /* --- 2. 分頁按鈕 --- */
         .tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-            width: 100%;
-            max-width: 500px;
+	    display: flex;
+	    gap: 10px;
+	    margin-bottom: 15px;
+	    width: 100%;            /* 填滿父容器 */
+	    max-width: 500px;       /* 與搜尋欄 max-width 一致 */
+	    margin-left: auto;      /* 置中 */
+	    margin-right: auto;     /* 置中 */
         }
 
         .tab-btn {
@@ -52,6 +54,7 @@
             font-weight: bold;
             color: var(--dark-pink);
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+	    white-space: nowrap;
         }
 
         .tab-btn.active {
@@ -62,9 +65,9 @@
         /* --- 3. 搜尋區域 --- */
         .search-area {
             width: 100%;
-            max-width: 500px;
-            margin: 0 auto 25px auto;
-            position: relative;
+	    max-width: 500px;
+	    margin: 0 auto 15px auto;
+	    position: relative;
         }
 
         #guestInput {
@@ -131,16 +134,15 @@
         }
 
         .canvas-container {
-            position: relative;
             width: 100%;
-            max-width: 500px;
-            margin: 0 auto;
-            overflow: visible;
+	    max-width: 500px;
+	    margin-left: auto;
+	    margin-right: auto;
         }
 
         .canvas-scaler {
             width: 500px;
-            transform-origin: top center;
+            transform-origin: top left;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -243,7 +245,6 @@
         /* --- 6. 圖例 --- */
         .legend {
             width: 100%;
-            max-width: 500px;
             margin: 10px auto;
             padding: 15px;
             background: white;
@@ -272,7 +273,8 @@
         /* --- 7. 賓客清單表格 --- */
         .list-container {
             width: 100%;
-            max-width: 500px;
+	    max-width: 500px;
+	    margin: 0 auto;
         }
 
         .guest-table {
@@ -579,22 +581,27 @@
 	}
         
 	function handleResize() {
-            const scaler = document.getElementById('scaler');
-            const container = document.querySelector('.canvas-container');
-            if (!scaler || !container) return;
-            const screenWidth = window.innerWidth - 20;
-            const originalWidth = 500;
-            const scale = Math.min(screenWidth / originalWidth, 1);
-            scaler.style.transform = `scale(${scale})`;
-            if (scale < 1) {
-                scaler.style.transformOrigin = "top left";
-                scaler.style.marginLeft = (screenWidth - (originalWidth * scale)) / 2 + "px";
-            } else {
-                scaler.style.transformOrigin = "top center";
-                scaler.style.marginLeft = "0";
-            }
-            container.style.height = (scaler.offsetHeight * scale + 5) + "px"; 
-        }
+	    const scaler = document.getElementById('scaler');
+	    const container = document.querySelector('.canvas-container');
+	    if (!scaler || !container) return;
+	
+	    // 取得容器目前的寬度
+	    const containerWidth = container.offsetWidth;
+	    const originalWidth = 500;
+	    
+	    // 計算縮放比例
+	    const scale = containerWidth / originalWidth;
+	
+	    if (scale < 1) {
+	        scaler.style.transform = `scale(${scale})`;
+	        scaler.style.transformOrigin = "top left";
+	        // 重設容器高度以適應縮放後的內容
+	        container.style.height = (scaler.offsetHeight * scale) + "px";
+	    } else {
+	        scaler.style.transform = "none";
+	        container.style.height = "auto";
+	    }
+	}
 
         window.addEventListener('resize', handleResize);
         window.addEventListener('load', handleResize);
