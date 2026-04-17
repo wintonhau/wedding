@@ -33,16 +33,30 @@
 	    -webkit-overflow-scrolling: touch;
         }
 
+	.sticky-header {
+	    position: -webkit-sticky; /* 支援 Safari */
+	    position: sticky;
+	    top: 0;
+	    background-color: var(--bg-pink);
+	    width: 100%;
+ 	    z-index: 9999;
+ 	    padding-top: 10px;
+ 	    padding-bottom: 5px;
+ 	    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+	    display: flex;
+	    flex-direction: column;
+	    align-items: center;
+	}
         /* --- 2. 分頁按鈕 --- */
         .tabs {
 	    display: flex;
 	    gap: 10px;
 	    margin-bottom: 15px;
-	    width: 100%;            /* 填滿父容器 */
-	    max-width: 500px;       /* 與搜尋欄 max-width 一致 */
-	    margin-left: auto;      /* 置中 */
-	    margin-right: auto;     /* 置中 */
-        }
+	    width: 95%;            /* 在手機上留一點邊距，或用 calc(100% - 20px) */
+	    max-width: 500px;
+	    margin-left: auto;
+	    margin-right: auto;
+	}
 
         .tab-btn {
             flex: 1;
@@ -54,7 +68,6 @@
             font-weight: bold;
             color: var(--dark-pink);
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-	    white-space: nowrap;
         }
 
         .tab-btn.active {
@@ -64,11 +77,11 @@
 
         /* --- 3. 搜尋區域 --- */
         .search-area {
-            width: 100%;
+	    width: 95%;
 	    max-width: 500px;
-	    margin: 0 auto 15px auto;
+	    margin: 0 auto 10px auto;
 	    position: relative;
-        }
+	}
 
         #guestInput {
             width: 100%;
@@ -124,13 +137,12 @@
         /* --- 4. 座位圖容器 --- */
         .view-content {
             display: none;
-            width: 100%;
-            flex-direction: column;
-            align-items: center;
+	    padding-top: 10px;
+	    width: 100%;
         }
 
         .view-content.active {
-            display: flex;
+            display: block;
         }
 
         .canvas-container {
@@ -272,7 +284,7 @@
 
         /* --- 7. 賓客清單表格 --- */
         .list-container {
-            width: 100%;
+            width: 95%;
 	    max-width: 500px;
 	    margin: 0 auto;
         }
@@ -316,16 +328,17 @@
     </style>
 </head>
 <body>
+    <div class="sticky-header">
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('map')">座位圖</button>
+            <button class="tab-btn" onclick="switchTab('list')">賓客清單</button>
+        </div>
 
-    <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab('map')">座位圖</button>
-        <button class="tab-btn" onclick="switchTab('list')">賓客清單</button>
-    </div>
-
-    <div class="search-area">
-        <input type="text" id="guestInput" placeholder="🔍 搜尋稱呼或姓名..." autocomplete="off">
-        <button id="clearBtn" class="clear-btn">✕</button>
-        <div id="results"></div>
+        <div class="search-area">
+            <input type="text" id="guestInput" placeholder="🔍 搜尋稱呼或姓名..." autocomplete="off">
+            <button id="clearBtn" class="clear-btn">✕</button>
+            <div id="results"></div>
+        </div>
     </div>
 
     <div id="view-map" class="view-content active">
@@ -385,18 +398,31 @@
         ];
 
         function switchTab(view) {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.querySelectorAll('.view-content').forEach(v => v.classList.remove('active'));
-            if(view === 'map') {
-                document.querySelector('.tab-btn:nth-child(1)').classList.add('active');
-                document.getElementById('view-map').classList.add('active');
-                setTimeout(handleResize, 50);
-            } else {
-                document.querySelector('.tab-btn:nth-child(2)').classList.add('active');
-                document.getElementById('view-list').classList.add('active');
-                renderFullList();
-            }
-        }
+	    // 1. 移除所有按鈕的高亮狀態
+	    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+	    
+	    // 2. 隱藏所有內容區域
+	    document.querySelectorAll('.view-content').forEach(v => {
+	        v.classList.remove('active');
+	        v.style.display = 'none'; 
+	    });
+	
+	    if(view === 'map') {
+	        // 顯示座位圖
+	        document.querySelector('.tab-btn:nth-child(1)').classList.add('active');
+	        const viewMap = document.getElementById('view-map');
+ 	       viewMap.classList.add('active');
+ 	       viewMap.style.display = 'block';
+ 	       setTimeout(handleResize, 50);
+ 	   } else {
+ 	       // 顯示賓客清單
+ 	       document.querySelector('.tab-btn:nth-child(2)').classList.add('active');
+ 	       const viewList = document.getElementById('view-list');
+ 	       viewList.classList.add('active');
+ 	       viewList.style.display = 'block';
+ 	       renderFullList();
+ 	   }
+	}
 
         function renderFullList() {
 	    const tbody = document.getElementById('fullListBody');
@@ -521,7 +547,7 @@
             
             if(target && wrap) {
                 target.classList.add('active');
-                wrap.style.zIndex = "5000"; 
+                wrap.style.zIndex = "2000"; 
                 const tip = document.createElement('div');
                 tip.className = 'guest-tip';
                 tip.id = 'active-tip';
@@ -585,18 +611,15 @@
 	    const container = document.querySelector('.canvas-container');
 	    if (!scaler || !container) return;
 	
-	    // 取得容器目前的寬度
 	    const containerWidth = container.offsetWidth;
 	    const originalWidth = 500;
-	    
-	    // 計算縮放比例
 	    const scale = containerWidth / originalWidth;
 	
 	    if (scale < 1) {
 	        scaler.style.transform = `scale(${scale})`;
 	        scaler.style.transformOrigin = "top left";
 	        // 重設容器高度以適應縮放後的內容
-	        container.style.height = (scaler.offsetHeight * scale) + "px";
+	        container.style.height = (scaler.getBoundingClientRect().height) + "px";
 	    } else {
 	        scaler.style.transform = "none";
 	        container.style.height = "auto";
